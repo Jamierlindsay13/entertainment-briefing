@@ -1,0 +1,54 @@
+name: Daily Entertainment Briefing
+
+on:
+  schedule:
+    # 6:15 AM MST = 13:15 UTC daily
+    - cron: '15 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download database artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: entertainment-briefing-db
+          path: .
+          search_artifacts: true
+          if_no_artifact_found: warn
+        continue-on-error: true
+
+      - name: Initialize database
+        run: python main.py init-db
+
+      - name: Send briefing
+        env:
+          SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+        run: python main.py send
+
+      - name: Upload database artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: entertainment-briefing-db
+          path: entertainment_briefing.db
+          retention-days: 90

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entertainment Briefing - {{ date }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;">
+<tr><td align="center" style="padding:20px 10px;">
+<table width="680" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+<!-- Header -->
+<tr>
+<td style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:30px 40px;text-align:center;">
+  <h1 style="margin:0;color:#fff;font-size:28px;font-weight:700;letter-spacing:1px;">Daily Entertainment Briefing</h1>
+  <p style="margin:8px 0 0;color:#a0aec0;font-size:14px;">{{ date }} &bull; {{ total_stories }} stories across {{ category_count }} categories</p>
+</td>
+</tr>
+
+<!-- Quick Stats -->
+<tr>
+<td style="padding:20px 40px 10px;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      {% for cat_name, count in category_counts.items() %}
+      <td style="text-align:center;padding:8px;{% if not loop.last %}border-right:1px solid #e2e8f0;{% endif %}">
+        <div style="font-size:20px;font-weight:700;color:#1a1a2e;">{{ count }}</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">{{ cat_name }}</div>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+</td>
+</tr>
+
+{% for category_name, stories in categories.items() %}
+{% if stories %}
+<!-- {{ category_name }} -->
+<tr>
+<td style="padding:20px 40px 10px;">
+  <h2 style="margin:0 0 12px;font-size:18px;color:#1a1a2e;border-bottom:2px solid #e2e8f0;padding-bottom:8px;">
+    {{ category_icons[category_name] }} {{ category_name }}
+    <span style="font-size:13px;color:#888;font-weight:400;">({{ stories|length }})</span>
+  </h2>
+  <table width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;">
+    {% for story in stories %}
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;">
+        <a href="{{ story.url }}" style="color:#2563eb;text-decoration:none;font-weight:600;font-size:14px;">{{ story.title }}</a>
+        {% if story.summary %}
+        <p style="margin:4px 0 0;color:#666;font-size:13px;line-height:1.4;">{{ story.summary[:200] }}{% if story.summary|length > 200 %}...{% endif %}</p>
+        {% endif %}
+        <p style="margin:3px 0 0;font-size:11px;color:#aaa;">
+          {{ story.source }}
+          {% if story.get('venue') %} &bull; {{ story.venue }}{% endif %}
+          {% if story.get('date') %} &bull; {{ story.date }}{% endif %}
+        </p>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</td>
+</tr>
+{% endif %}
+{% endfor %}
+
+{% if errors %}
+<!-- Errors -->
+<tr>
+<td style="padding:10px 40px;">
+  <div style="background:#fff3cd;padding:10px 16px;border-radius:6px;border-left:4px solid #ffc107;font-size:12px;color:#856404;">
+    <strong>Note:</strong> Some sources were unavailable: {{ errors|join(', ') }}
+  </div>
+</td>
+</tr>
+{% endif %}
+
+<!-- Footer -->
+<tr>
+<td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+  <p style="margin:0;color:#a0aec0;font-size:12px;">
+    Curated from RSS feeds and event listings. Stories are deduplicated across sends.
+  </p>
+  <p style="margin:8px 0 0;color:#cbd5e0;font-size:11px;">Generated {{ generated_at }}</p>
+</td>
+</tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
