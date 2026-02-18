@@ -16,9 +16,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from config import (
     ACTORS_CELEBRITY_FEEDS,
-    ACTORS_CROSS_FILTER_FEEDS,
     CLASSIC_ROCK_FEEDS,
-    CLASSIC_ROCK_CROSS_FILTER_FEEDS,
     GENERAL_ENTERTAINMENT_FEEDS,
     MIN_TOTAL_STORIES,
     MUSICIANS_MUSIC_FEEDS,
@@ -28,7 +26,6 @@ from src.email_builder import get_email_subject, render_newsletter
 from src.feeds import fetch_feeds
 from src.filters import process_all_stories
 from src.notifications import send_email
-from src.scrapers import fetch_edmonton_events
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,14 +35,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _collect_stories(dry_run: bool = False) -> tuple[dict, list[str]]:
-    """Fetch all feeds and events, categorize and dedup.
+def _collect_stories() -> tuple[dict, list[str]]:
+    """Fetch all feeds, categorize and dedup.
 
     Returns (categorized_stories, errors).
     """
     errors = []
 
-    # Fetch each category's feeds with error isolation
     logger.info("Fetching General Entertainment feeds...")
     general_stories = fetch_feeds(GENERAL_ENTERTAINMENT_FEEDS)
     if not general_stories:
@@ -66,20 +62,10 @@ def _collect_stories(dry_run: bool = False) -> tuple[dict, list[str]]:
     if not classic_rock_stories:
         errors.append("Classic Rock feeds")
 
-    # Edmonton events (skip in dry-run or if no API key)
-    edmonton_events = []
-    if not dry_run:
-        logger.info("Fetching Edmonton events...")
-        edmonton_events = fetch_edmonton_events()
-        if not edmonton_events and os.environ.get("TICKETMASTER_API_KEY"):
-            errors.append("Edmonton events")
-    else:
-        logger.info("[DRY RUN] Skipping Edmonton events")
-
     logger.info("Processing stories...")
     categorized = process_all_stories(
         general_stories, actor_stories, music_stories,
-        classic_rock_stories, edmonton_events,
+        classic_rock_stories,
     )
 
     return categorized, errors
@@ -93,7 +79,7 @@ def cmd_init_db(args):
 
 def cmd_generate(args):
     """Generate briefing HTML and write to file."""
-    categorized, errors = _collect_stories(dry_run=args.dry_run)
+    categorized, errors = _collect_stories()
 
     total = sum(len(s) for s in categorized.values())
     if total == 0:
@@ -131,7 +117,7 @@ def cmd_send(args):
     # Cleanup old stories
     cleanup_old_stories()
 
-    categorized, errors = _collect_stories(dry_run=args.dry_run)
+    categorized, errors = _collect_stories()
 
     total = sum(len(s) for s in categorized.values())
     if total < MIN_TOTAL_STORIES:
@@ -180,12 +166,10 @@ def main():
 
     # generate
     gen_parser = subparsers.add_parser("generate", help="Generate briefing HTML to file")
-    gen_parser.add_argument("--dry-run", action="store_true", help="Skip venue scraping")
     gen_parser.set_defaults(func=cmd_generate)
 
     # preview
     prev_parser = subparsers.add_parser("preview", help="Generate and open in browser")
-    prev_parser.add_argument("--dry-run", action="store_true", help="Skip venue scraping")
     prev_parser.set_defaults(func=cmd_preview)
 
     # send

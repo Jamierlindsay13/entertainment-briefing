@@ -59,18 +59,6 @@ CLASSIC_ROCK_KEYWORDS = [
     "hall of fame", "reunion tour", "farewell tour", "rock icon",
 ]
 
-# ---------- Edmonton Events ----------
-
-EDMONTON_CITY = "Edmonton"
-EDMONTON_COUNTRY_CODE = "CA"
-EDMONTON_STATE_CODE = "AB"
-EDMONTON_LATLONG = "53.5461,-113.4937"
-EDMONTON_RADIUS = "50"  # km
-
-# Ticketmaster Discovery API
-TICKETMASTER_BASE_URL = "https://app.ticketmaster.com/discovery/v2"
-TICKETMASTER_PAGE_SIZE = 20
-
 # ---------- Email ----------
 
 EMAIL_SUBJECT_PREFIX = "[Entertainment Briefing]"
@@ -88,7 +76,6 @@ CATEGORIES = [
     "General Entertainment",
     "Actors & Celebrity",
     "Musicians & Music",
-    "Edmonton Events",
     "Classic Rock",
 ]
 

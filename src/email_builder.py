@@ -14,7 +14,6 @@ CATEGORY_ICONS = {
     "General Entertainment": "&#127916;",  # movie camera
     "Actors & Celebrity": "&#11088;",       # star
     "Musicians & Music": "&#127925;",       # music note
-    "Edmonton Events": "&#127915;",         # ticket
     "Classic Rock": "&#127928;",            # guitar
 }
 

@@ -49,19 +49,17 @@ def test_categorize_stories_basic():
     actors = [_make_story("Actor 1", "https://b.com/1")]
     music = [_make_story("Music 1", "https://c.com/1")]
     rock = [_make_story("Rock 1", "https://d.com/1")]
-    events = [_make_story("Event 1", "https://e.com/1")]
 
-    result = categorize_stories(general, actors, music, rock, events)
+    result = categorize_stories(general, actors, music, rock)
     assert len(result["General Entertainment"]) == 2
     assert len(result["Actors & Celebrity"]) >= 1
     assert len(result["Musicians & Music"]) == 1
     assert len(result["Classic Rock"]) >= 1
-    assert len(result["Edmonton Events"]) == 1
 
 
 def test_categorize_cross_filter_actors_moves_not_copies():
     general = [_make_story("Star lands casting role in new film", "https://variety.com/1")]
-    result = categorize_stories(general, [], [], [], [])
+    result = categorize_stories(general, [], [], [])
     # Should move to Actors, NOT appear in General
     assert len(result["General Entertainment"]) == 0
     assert len(result["Actors & Celebrity"]) == 1
@@ -70,7 +68,7 @@ def test_categorize_cross_filter_actors_moves_not_copies():
 
 def test_categorize_cross_filter_classic_rock_moves_not_copies():
     music = [_make_story("Led Zeppelin remaster announced", "https://rollingstone.com/1")]
-    result = categorize_stories([], [], music, [], [])
+    result = categorize_stories([], [], music, [])
     # Should move to Classic Rock, NOT appear in Music
     assert len(result["Musicians & Music"]) == 0
     assert len(result["Classic Rock"]) == 1
@@ -86,7 +84,7 @@ def test_no_duplicate_urls_across_categories():
         _make_story("Led Zeppelin tour", "https://rollingstone.com/1"),
         _make_story("New pop album", "https://rollingstone.com/2"),
     ]
-    result = categorize_stories(general, [], music, [], [])
+    result = categorize_stories(general, [], music, [])
     all_urls = []
     for stories in result.values():
         all_urls.extend(s["url"] for s in stories)

@@ -6,7 +6,7 @@ from src.email_builder import CATEGORY_ICONS, get_email_subject, render_newslett
 def _make_categorized(n_per_cat=2):
     """Create sample categorized stories."""
     categories = {}
-    for cat in ["General Entertainment", "Actors & Celebrity", "Musicians & Music", "Edmonton Events", "Classic Rock"]:
+    for cat in ["General Entertainment", "Actors & Celebrity", "Musicians & Music", "Classic Rock"]:
         stories = []
         for i in range(n_per_cat):
             stories.append({
@@ -48,7 +48,6 @@ def test_render_newsletter_empty_categories():
         "General Entertainment": [],
         "Actors & Celebrity": [],
         "Musicians & Music": [{"title": "One", "url": "https://a.com/1", "summary": "S", "source": "s", "published": ""}],
-        "Edmonton Events": [],
         "Classic Rock": [],
     }
     html = render_newsletter(categorized)
@@ -63,5 +62,5 @@ def test_get_email_subject():
 
 
 def test_category_icons_all_present():
-    for cat in ["General Entertainment", "Actors & Celebrity", "Musicians & Music", "Edmonton Events", "Classic Rock"]:
+    for cat in ["General Entertainment", "Actors & Celebrity", "Musicians & Music", "Classic Rock"]:
         assert cat in CATEGORY_ICONS
