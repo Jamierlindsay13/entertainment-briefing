@@ -59,21 +59,38 @@ def test_categorize_stories_basic():
     assert len(result["Edmonton Events"]) == 1
 
 
-def test_categorize_cross_filter_actors():
+def test_categorize_cross_filter_actors_moves_not_copies():
     general = [_make_story("Star lands casting role in new film", "https://variety.com/1")]
     result = categorize_stories(general, [], [], [], [])
-    # Should appear in both General and Actors (cross-filter)
-    assert len(result["General Entertainment"]) == 1
-    actor_titles = [s["title"] for s in result["Actors & Celebrity"]]
-    assert "Star lands casting role in new film" in actor_titles
+    # Should move to Actors, NOT appear in General
+    assert len(result["General Entertainment"]) == 0
+    assert len(result["Actors & Celebrity"]) == 1
+    assert result["Actors & Celebrity"][0]["title"] == "Star lands casting role in new film"
 
 
-def test_categorize_cross_filter_classic_rock():
+def test_categorize_cross_filter_classic_rock_moves_not_copies():
     music = [_make_story("Led Zeppelin remaster announced", "https://rollingstone.com/1")]
     result = categorize_stories([], [], music, [], [])
-    assert len(result["Musicians & Music"]) == 1
-    rock_titles = [s["title"] for s in result["Classic Rock"]]
-    assert "Led Zeppelin remaster announced" in rock_titles
+    # Should move to Classic Rock, NOT appear in Music
+    assert len(result["Musicians & Music"]) == 0
+    assert len(result["Classic Rock"]) == 1
+    assert result["Classic Rock"][0]["title"] == "Led Zeppelin remaster announced"
+
+
+def test_no_duplicate_urls_across_categories():
+    general = [
+        _make_story("Oscar winner casting news", "https://variety.com/1"),
+        _make_story("Normal entertainment", "https://variety.com/2"),
+    ]
+    music = [
+        _make_story("Led Zeppelin tour", "https://rollingstone.com/1"),
+        _make_story("New pop album", "https://rollingstone.com/2"),
+    ]
+    result = categorize_stories(general, [], music, [], [])
+    all_urls = []
+    for stories in result.values():
+        all_urls.extend(s["url"] for s in stories)
+    assert len(all_urls) == len(set(all_urls)), "Duplicate URLs found across categories"
 
 
 def test_dedup_removes_sent():

@@ -52,50 +52,67 @@ def categorize_stories(
     classic_rock_stories: list[dict],
     edmonton_events: list[dict],
 ) -> dict[str, list[dict]]:
-    """Assign stories to categories with cross-filtering.
+    """Assign each story to exactly one category (no duplicates).
+
+    Cross-filtering moves stories to the more specific category rather than
+    copying them. Priority: specific categories first, then general.
 
     Returns dict mapping category name to list of stories.
     """
     categorized = {cat: [] for cat in CATEGORIES}
+    assigned_urls = set()  # track URLs to prevent any story appearing twice
 
-    # 1. General Entertainment - direct from feeds
-    for story in general_stories:
-        story["category"] = "General Entertainment"
-        categorized["General Entertainment"].append(story)
-
-    # 2. Actors & Celebrity - direct from Hollywood Reporter + cross-filter
-    for story in actor_stories:
-        story["category"] = "Actors & Celebrity"
-        categorized["Actors & Celebrity"].append(story)
-
-    # Cross-filter: Variety/Deadline stories matching actor keywords
-    for story in general_stories:
-        if _matches_keywords(story, ACTOR_KEYWORDS):
-            cross_story = story.copy()
-            cross_story["category"] = "Actors & Celebrity"
-            categorized["Actors & Celebrity"].append(cross_story)
-
-    # 3. Musicians & Music - direct from music feeds
-    for story in music_stories:
-        story["category"] = "Musicians & Music"
-        categorized["Musicians & Music"].append(story)
-
-    # 4. Edmonton Events
+    # 1. Edmonton Events (always unique)
     for event in edmonton_events:
         event["category"] = "Edmonton Events"
         categorized["Edmonton Events"].append(event)
+        assigned_urls.add(event["url"])
 
-    # 5. Classic Rock - direct from UCR/Louder + cross-filter
+    # 2. Actors & Celebrity - direct from Hollywood Reporter
+    for story in actor_stories:
+        if story["url"] not in assigned_urls:
+            story["category"] = "Actors & Celebrity"
+            categorized["Actors & Celebrity"].append(story)
+            assigned_urls.add(story["url"])
+
+    # Cross-filter: General entertainment stories matching actor keywords
+    # move to Actors (not copy) - they won't appear in General
+    actor_cross_urls = set()
+    for story in general_stories:
+        if story["url"] not in assigned_urls and _matches_keywords(story, ACTOR_KEYWORDS):
+            story["category"] = "Actors & Celebrity"
+            categorized["Actors & Celebrity"].append(story)
+            assigned_urls.add(story["url"])
+            actor_cross_urls.add(story["url"])
+
+    # 3. Classic Rock - direct from UCR/Louder
     for story in classic_rock_stories:
-        story["category"] = "Classic Rock"
-        categorized["Classic Rock"].append(story)
+        if story["url"] not in assigned_urls:
+            story["category"] = "Classic Rock"
+            categorized["Classic Rock"].append(story)
+            assigned_urls.add(story["url"])
 
-    # Cross-filter: Rolling Stone stories matching classic rock keywords
+    # Cross-filter: Music stories matching classic rock keywords
+    # move to Classic Rock (not copy) - they won't appear in Music
     for story in music_stories:
-        if _matches_keywords(story, CLASSIC_ROCK_KEYWORDS):
-            cross_story = story.copy()
-            cross_story["category"] = "Classic Rock"
-            categorized["Classic Rock"].append(cross_story)
+        if story["url"] not in assigned_urls and _matches_keywords(story, CLASSIC_ROCK_KEYWORDS):
+            story["category"] = "Classic Rock"
+            categorized["Classic Rock"].append(story)
+            assigned_urls.add(story["url"])
+
+    # 4. Musicians & Music - remaining music stories
+    for story in music_stories:
+        if story["url"] not in assigned_urls:
+            story["category"] = "Musicians & Music"
+            categorized["Musicians & Music"].append(story)
+            assigned_urls.add(story["url"])
+
+    # 5. General Entertainment - remaining general stories
+    for story in general_stories:
+        if story["url"] not in assigned_urls:
+            story["category"] = "General Entertainment"
+            categorized["General Entertainment"].append(story)
+            assigned_urls.add(story["url"])
 
     return categorized
 

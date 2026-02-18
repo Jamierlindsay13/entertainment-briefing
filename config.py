@@ -5,8 +5,8 @@
 GENERAL_ENTERTAINMENT_FEEDS = [
     "https://variety.com/feed/",
     "https://deadline.com/feed/",
-    "https://ew.com/feed/",
-    "https://feeds.feedburner.com/people/headlines",
+    "https://www.eonline.com/syndication/feeds/rssfeeds/topstories.xml",
+    "https://pagesix.com/feed/",
 ]
 
 ACTORS_CELEBRITY_FEEDS = [
